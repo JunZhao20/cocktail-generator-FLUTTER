@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import "package:flutter/material.dart";
 import 'package:http/http.dart' as http;
 
@@ -70,12 +73,18 @@ class Homepage extends StatelessWidget {
               ElevatedButton(
                 // Generate random cocktail
                 onPressed: () async {
-                  const Url = 'www.thecocktaildb.com/api/json/v1/1/random.php';
-                  final data = Uri.parse(Url);
-                  final response = await http.get(data);
+                  final response = await http.get(Uri.parse(
+                      'www.thecocktaildb.com/api/json/v1/1/random.php'));
+
+                  if (response.statusCode == 200) {
+                    final data = jsonDecode(response.body);
+                    log(data);
+                  } else {
+                    throw Exception('HTTP Failed');
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 233, 222, 120),
+                    backgroundColor: const Color.fromARGB(255, 233, 222, 120),
                     elevation: 0.5,
                     minimumSize: const Size(150, 70)),
                 child: const Text(
