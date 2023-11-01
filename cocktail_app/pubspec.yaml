@@ -29,3 +29,5 @@ fonts:
         weight: 600
 flutter:
   uses-material-design: true
+  assets:
+    - images/cocktail.jpg
