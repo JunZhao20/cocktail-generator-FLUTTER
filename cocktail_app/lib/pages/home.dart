@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:http/http.dart' as http;
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
@@ -11,8 +12,8 @@ class Homepage extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color.fromARGB(11, 104, 82, 10),
-              Color.fromARGB(204, 233, 151, 83)
+              Color.fromARGB(255, 149, 201, 243),
+              Color.fromARGB(255, 12, 206, 99)
             ]),
       ),
       child: Scaffold(
@@ -56,7 +57,11 @@ class Homepage extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                    )
+                    ),
+                    ElevatedButton(
+                      onPressed: () => {},
+                      child: const Text('View'),
+                    ),
                   ],
                 ),
               ),
@@ -64,9 +69,13 @@ class Homepage extends StatelessWidget {
               //     'Ingredients:\n- whistky\n- apple juice\n- fruit punch')),
               ElevatedButton(
                 // Generate random cocktail
-                onPressed: () => {},
+                onPressed: () async {
+                  const Url = 'www.thecocktaildb.com/api/json/v1/1/random.php';
+                  final data = Uri.parse(Url);
+                  final response = await http.get(data);
+                },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 231, 226, 182),
+                    backgroundColor: Color.fromARGB(255, 233, 222, 120),
                     elevation: 0.5,
                     minimumSize: const Size(150, 70)),
                 child: const Text(
