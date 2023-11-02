@@ -12,33 +12,38 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   late String drinkName;
   late String img;
-  List ingredients = [];
+  bool showIngredients = false;
+  List<String> ingredients = [];
+  bool pressed = false;
 
-  void fetchCocktail(BuildContext context) async {
+  fetchCocktail(BuildContext context) async {
     final response = await http.get(
       Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/random.php'),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      for (var i = 17; i < 32; i++) {
-        if (data['drinks'][0][i] != null) {
-          ingredients.add(data['drinks'][0][i]);
+      for (var i = 0; i < 16; i++) {
+        if (data['drinks'][0]['strIngredient$i'] != null) {
+          ingredients.add(data['drinks'][0]['strIngredient$i']);
         }
       }
       setState(() {
         drinkName = data['drinks'][0]['strDrink'];
         img = data['drinks'][0]['strDrinkThumb'];
+        showIngredients = true;
       });
 
+      // ignore: use_build_context_synchronously
       showDialog(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(
-          title: Text(
+          title: const Text(
             "Drink Generated!",
             textAlign: TextAlign.center,
           ),
-          content: Text('🍸 $drinkName 🍸\nPress view to see ingredients',
+          content: Text(
+              '🍸 $drinkName 🍸\n\nPress view to see the \ningredients.',
               textAlign: TextAlign.center),
           actions: [
             TextButton(
@@ -130,23 +135,37 @@ class _HomepageState extends State<Homepage> {
                 height: 250,
                 width: 250,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
                       child: const Text(
-                        'Ingredients',
+                        'Ingredients:',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    // Container(
-                    //   child: Column(children: [
-                    //      Text()
-                    //   ],),
-                    // ),
+                    if (showIngredients & pressed)
+                      Container(
+                        height: 130,
+                        child: ListView(
+                          children: ingredients
+                              .map((ingredient) => Text(
+                                    '$ingredient',
+                                    textAlign: TextAlign.center,
+                                  ))
+                              .toList(),
+                        ),
+                      ),
                     ElevatedButton(
-                      onPressed: () => {},
+                      onPressed: () => {
+                        setState(() {
+                          showIngredients = true;
+                          pressed = true;
+                        }),
+                      },
                       child: const Text('View'),
                     ),
                   ],
@@ -155,6 +174,10 @@ class _HomepageState extends State<Homepage> {
               ElevatedButton(
                 onPressed: () {
                   fetchCocktail(context);
+                  setState(() {
+                    ingredients = [];
+                    pressed = false;
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 233, 222, 120),
