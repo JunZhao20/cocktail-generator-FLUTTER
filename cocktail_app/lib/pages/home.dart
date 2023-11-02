@@ -12,6 +12,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   late String drinkName;
   late String img;
+  List ingredients = [];
 
   void fetchCocktail(BuildContext context) async {
     final response = await http.get(
@@ -20,6 +21,11 @@ class _HomepageState extends State<Homepage> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      for (var i = 17; i < 32; i++) {
+        if (data['drinks'][0][i] != null) {
+          ingredients.add(data['drinks'][0][i]);
+        }
+      }
       setState(() {
         drinkName = data['drinks'][0]['strDrink'];
         img = data['drinks'][0]['strDrinkThumb'];
@@ -28,9 +34,12 @@ class _HomepageState extends State<Homepage> {
       showDialog(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(
-          title: Text("Drink Generated: $drinkName"),
-          content:
-              const Text('Other drink details or data can be displayed here'),
+          title: Text(
+            "Drink Generated!",
+            textAlign: TextAlign.center,
+          ),
+          content: Text('🍸 $drinkName 🍸\nPress view to see ingredients',
+              textAlign: TextAlign.center),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -99,13 +108,18 @@ class _HomepageState extends State<Homepage> {
                         ? Image.network(
                             img,
                           )
-                        : Placeholder(),
+                        : const Placeholder(
+                            color: Colors.white,
+                          ),
                   ),
                 ),
               ),
               Container(
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Text('$drinkName'),
+                child: Text('$drinkName',
+                    style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline)),
               ),
               Container(
                 padding: const EdgeInsets.all(16.0),
@@ -126,6 +140,11 @@ class _HomepageState extends State<Homepage> {
                         ),
                       ),
                     ),
+                    // Container(
+                    //   child: Column(children: [
+                    //      Text()
+                    //   ],),
+                    // ),
                     ElevatedButton(
                       onPressed: () => {},
                       child: const Text('View'),
