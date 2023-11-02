@@ -1,23 +1,69 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class Homepage extends StatelessWidget {
-  const Homepage({super.key});
+class Homepage extends StatefulWidget {
+  const Homepage({Key? key}) : super(key: key);
+
+  @override
+  _HomepageState createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  late String drinkName;
+  late String img;
+
+  void fetchCocktail(BuildContext context) async {
+    final response = await http.get(
+      Uri.parse('https://www.thecocktaildb.com/api/json/v1/1/random.php'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        drinkName = data['drinks'][0]['strDrink'];
+        img = data['drinks'][0]['strDrinkThumb'];
+      });
+
+      showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) => AlertDialog(
+          title: Text("Drink Generated: $drinkName"),
+          content:
+              const Text('Other drink details or data can be displayed here'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      throw Exception(
+          'HTTP request failed with status: ${response.statusCode}');
+    }
+  }
+
+  @override
+  void initState() {
+    drinkName = '';
+    img = '';
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromARGB(255, 149, 201, 243),
-              Color.fromARGB(255, 12, 206, 99)
-            ]),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.fromARGB(255, 149, 201, 243),
+            Color.fromARGB(255, 12, 206, 99),
+          ],
+        ),
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -37,19 +83,36 @@ class Homepage extends StatelessWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 3),
-                    borderRadius: BorderRadius.circular(12.0)),
+                  border: Border.all(color: Colors.white, width: 3),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
                 child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.asset(
-                      'images/cocktail.jpg',
-                    )),
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxHeight: 250,
+                      maxWidth: 250,
+                      minHeight: 250,
+                      minWidth: 250,
+                    ),
+                    child: img.isNotEmpty
+                        ? Image.network(
+                            img,
+                          )
+                        : Placeholder(),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: const BoxDecoration(color: Colors.white),
+                child: Text('$drinkName'),
               ),
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.0)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
                 height: 250,
                 width: 250,
                 child: Column(
@@ -58,7 +121,9 @@ class Homepage extends StatelessWidget {
                       child: const Text(
                         'Ingredients',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     ElevatedButton(
@@ -68,25 +133,15 @@ class Homepage extends StatelessWidget {
                   ],
                 ),
               ),
-              // child: const Text(
-              //     'Ingredients:\n- whistky\n- apple juice\n- fruit punch')),
               ElevatedButton(
-                // Generate random cocktail
-                onPressed: () async {
-                  final response = await http.get(Uri.parse(
-                      'www.thecocktaildb.com/api/json/v1/1/random.php'));
-
-                  if (response.statusCode == 200) {
-                    final data = jsonDecode(response.body);
-                    log(data);
-                  } else {
-                    throw Exception('HTTP Failed');
-                  }
+                onPressed: () {
+                  fetchCocktail(context);
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 233, 222, 120),
-                    elevation: 0.5,
-                    minimumSize: const Size(150, 70)),
+                  backgroundColor: const Color.fromARGB(255, 233, 222, 120),
+                  elevation: 0.5,
+                  minimumSize: const Size(150, 70),
+                ),
                 child: const Text(
                   'Generate',
                   style: TextStyle(fontSize: 20),
